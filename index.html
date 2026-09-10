@@ -51,12 +51,14 @@
             transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
             line-height: 1.45;
             font-size: 13.5px;
+            cursor: pointer;
+            user-select: none;
         }
         @media (min-width: 640px) {
             .sentence-token {
-                font-size: 14.5px;
-                padding: 10px 14px;
-                margin-bottom: 8px;
+                font-size: 14px;
+                padding: 9px 13px;
+                margin-bottom: 7px;
             }
         }
         .sentence-active {
@@ -80,6 +82,9 @@
             font-weight: 400;
             border-left-color: transparent;
             background-color: transparent;
+        }
+        .sentence-token:hover:not(.sentence-active) {
+            background-color: rgba(219, 226, 233, 0.5);
         }
     </style>
 </head>
@@ -157,39 +162,44 @@
     </div>
 
     <script>
-        // Verbatim spoken text and timings for Block 2: Audio Briefing (Slide 9)
+        // Baseline sentence timings mapped to Dr. Lindsay's natural cadence and deliberate pauses
+        const BASELINE_DURATION = 40.5;
+
         const timedPhrases = [
             { 
                 id: 0, 
                 start: 0.0, 
-                end: 7.8, 
+                end: 9.8, 
                 text: "When we teach you to look beneath the waterline, staff often worry: 'Are you asking me to just sit here and take verbal abuse because the patient is distressed?'" 
             },
             { 
                 id: 1, 
-                start: 7.9, 
-                end: 11.2, 
+                start: 9.9, 
+                end: 13.5, 
                 text: "Let me be completely clear: no." 
             },
             { 
                 id: 2, 
-                start: 11.3, 
-                end: 16.5, 
+                start: 13.6, 
+                end: 20.0, 
                 text: "Understanding the driver does not excuse the behaviour. Empathy is a diagnostic tool, not a surrender." 
             },
             { 
                 id: 3, 
-                start: 16.6, 
-                end: 25.5, 
+                start: 20.1, 
+                end: 31.8, 
                 text: "The Boundaries Ladder is your safety framework. It gives you four clear, proportional rungs to hold your professional limits calmly, firmly, and consistently without provoking an argument." 
             },
             { 
                 id: 4, 
-                start: 25.6, 
-                end: 35.0, 
+                start: 31.9, 
+                end: 40.5, 
                 text: "Step onto each rung as escalation demands — from re-anchoring the tone, to naming the operational barrier, to offering clear choice, and exiting safely." 
             }
         ];
+
+        // Scaled array dynamically adjusted once the audio file's exact duration is detected
+        let scaledPhrases = timedPhrases.map(p => ({ ...p }));
 
         // Populate sentence blocks into the container
         const speechBox = document.getElementById('speechBox');
@@ -198,19 +208,32 @@
             p.id = `s-${phrase.id}`;
             p.className = "sentence-token sentence-upcoming";
             p.innerText = phrase.text;
+            p.title = "Click to jump to this sentence";
+            p.onclick = () => seekToPhrase(phrase.id);
             speechBox.appendChild(p);
         });
 
         const audio = new Audio('./HD_S09_Lindsay_BoundariesLadderIntro.wav');
         let isPlaying = false;
         let ticker = null;
-        let totalDuration = 35.0;
+        let actualDuration = BASELINE_DURATION;
 
-        audio.addEventListener('loadedmetadata', () => {
-            if (audio.duration && !isNaN(audio.duration)) {
-                totalDuration = audio.duration;
+        // Auto-recalibrate phrase timing ratios to match the exact duration of the loaded WAV file
+        function recalibrateTimings() {
+            if (audio.duration && !isNaN(audio.duration) && audio.duration > 8) {
+                actualDuration = audio.duration;
+                const scale = actualDuration / BASELINE_DURATION;
+                scaledPhrases = timedPhrases.map(p => ({
+                    id: p.id,
+                    start: p.start * scale,
+                    end: p.end * scale,
+                    text: p.text
+                }));
             }
-        });
+        }
+
+        audio.addEventListener('loadedmetadata', recalibrateTimings);
+        audio.addEventListener('durationchange', recalibrateTimings);
 
         audio.addEventListener('ended', () => {
             pauseAudio();
@@ -227,13 +250,15 @@
             document.getElementById('speakerStatus').innerText = "Speaking";
             document.getElementById('speakerPulse').classList.add('animate-ping');
 
+            recalibrateTimings();
+
             audio.play().catch(err => {
                 console.warn("Direct audio blocked or missing, falling back to speech synthesis:", err);
                 fallbackSpeechSynthesis();
             });
 
             clearInterval(ticker);
-            ticker = setInterval(updateLiveProgress, 40);
+            ticker = setInterval(updateLiveProgress, 35);
         }
 
         function pauseAudio() {
@@ -255,13 +280,26 @@
             }
         }
 
+        function seekToPhrase(id) {
+            const target = scaledPhrases.find(p => p.id === id);
+            if (!target) return;
+
+            audio.currentTime = target.start + 0.05;
+            if (!isPlaying) {
+                playAudio();
+            } else {
+                updateLiveProgress();
+            }
+        }
+
         function updateLiveProgress() {
             const current = audio.currentTime;
-
             let activeSentenceEl = null;
 
-            timedPhrases.forEach((phrase) => {
+            scaledPhrases.forEach((phrase) => {
                 const el = document.getElementById(`s-${phrase.id}`);
+                if (!el) return;
+
                 if (current >= phrase.start && current < phrase.end) {
                     el.className = "sentence-token sentence-active";
                     activeSentenceEl = el;
@@ -276,14 +314,14 @@
             if (activeSentenceEl) {
                 const container = document.getElementById('transcriptViewport');
                 const offsetTop = activeSentenceEl.offsetTop - container.offsetTop;
-                if (Math.abs(container.scrollTop - (offsetTop - 20)) > 25) {
-                    container.scrollTo({ top: offsetTop - 20, behavior: 'smooth' });
+                if (Math.abs(container.scrollTop - (offsetTop - 15)) > 20) {
+                    container.scrollTo({ top: offsetTop - 15, behavior: 'smooth' });
                 }
             }
         }
 
         function resetTranscript() {
-            timedPhrases.forEach((phrase) => {
+            scaledPhrases.forEach((phrase) => {
                 const el = document.getElementById(`s-${phrase.id}`);
                 if (el) el.className = "sentence-token sentence-upcoming";
             });
@@ -295,7 +333,7 @@
                 window.speechSynthesis.cancel();
                 const fullText = timedPhrases.map(p => p.text).join(' ');
                 const utterance = new SpeechSynthesisUtterance(fullText);
-                utterance.rate = 0.92;
+                utterance.rate = 0.90;
                 utterance.pitch = 0.95;
                 const voices = window.speechSynthesis.getVoices();
                 const ukVoice = voices.find(v => v.lang.includes('en-GB') || v.name.includes('British') || v.name.includes('UK'));
@@ -303,9 +341,10 @@
 
                 utterance.onboundary = function(e) {
                     const charRatio = e.charIndex / Math.max(1, fullText.length);
-                    const approxTime = charRatio * totalDuration;
-                    timedPhrases.forEach((phrase) => {
+                    const approxTime = charRatio * actualDuration;
+                    scaledPhrases.forEach((phrase) => {
                         const el = document.getElementById(`s-${phrase.id}`);
+                        if (!el) return;
                         if (approxTime >= phrase.start && approxTime < phrase.end) {
                             el.className = "sentence-token sentence-active";
                         } else if (approxTime >= phrase.end) {
@@ -325,7 +364,7 @@
             }
         }
 
-        // Automatic 2-Second Delay Countdown
+        // Automatic 2-Second Delay Countdown (Preserved per instruction)
         window.addEventListener('DOMContentLoaded', () => {
             let countdown = 2;
             const delayNotice = document.getElementById('delayNotice');
