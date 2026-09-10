@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 9: Dr. Lindsay Dubock • The Boundaries Ladder Briefing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0C2340',
+                        deepnavy: '#061426',
+                        trust: '#005EB8',
+                        orange: '#FE5000',
+                        slate: '#333F48',
+                        ice: '#DBE2E9',
+                        cream: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::-webkit-scrollbar { display: none; }
+        * { scrollbar-width: none; }
+
+        /* Sentence highlighting tokens */
+        .sentence-token {
+            display: block;
+            margin-bottom: 8px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            border-left: 3px solid transparent;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1.55;
+            font-size: 13px;
+        }
+        .sentence-active {
+            background-color: #FE5000;
+            color: #ffffff !important;
+            font-weight: 600;
+            border-left-color: #0C2340;
+            box-shadow: 0 4px 14px rgba(254, 80, 0, 0.28);
+            transform: translateX(2px);
+        }
+        .sentence-spoken {
+            color: #0C2340;
+            opacity: 0.95;
+            font-weight: 500;
+            border-left-color: #DBE2E9;
+            background-color: rgba(219, 226, 233, 0.28);
+        }
+        .sentence-upcoming {
+            color: #94A3B8;
+            opacity: 0.65;
+            font-weight: 400;
+            border-left-color: transparent;
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-transparent text-slate font-sans p-2 sm:p-3 flex flex-col items-center justify-start w-full">
+
+    <div class="w-full max-w-4xl mx-auto bg-white border border-ice rounded-2xl shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch">
+        
+        <!-- Left Side: Interactive Telemetry & Sentence-by-Sentence Viewport -->
+        <div class="flex-1 p-4 sm:p-6 flex flex-col justify-between space-y-3.5 order-2 md:order-1">
+            
+            <!-- Header Metadata -->
+            <div>
+                <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-ice/70">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-orange animate-pulse"></span>
+                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-trust">
+                            Phase 3 · Abstract Conceptualisation & Safety
+                        </span>
+                    </div>
+                    <div id="delayNotice" class="text-[11px] font-mono text-orange font-semibold bg-orange/10 px-2.5 py-0.5 rounded-md">
+                        Starting in 2s...
+                    </div>
+                </div>
+
+                <div class="mt-2.5 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-navy tracking-tight leading-tight">
+                            The Boundaries Ladder: Clinical Briefing
+                        </h2>
+                        <p class="text-[11px] sm:text-xs text-slate/70 mt-0.5">
+                            Where empathy ends and professional safety limits begin
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sentence Highlighting Viewport -->
+            <div id="transcriptViewport" class="p-3.5 sm:p-4 bg-slate-50 border border-ice/80 rounded-xl overflow-y-auto max-h-[175px] sm:max-h-[195px] leading-relaxed scroll-smooth">
+                <div id="speechBox">
+                    <!-- Sentences populated via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Playback Control Bar -->
+            <div class="pt-2 border-t border-ice flex items-center space-x-3.5">
+                <!-- Play/Pause Button -->
+                <button id="btnPlayPause" onclick="toggleAudio()" 
+                        class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-navy hover:bg-trust text-white flex items-center justify-center transition-all active:scale-95 shadow-md cursor-pointer shrink-0"
+                        title="Play / Pause Briefing">
+                    <svg id="playPauseIcon" class="w-5 h-5 ml-0.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </button>
+
+                <!-- Scrubber Progress Bar & Timers -->
+                <div class="flex-1 flex flex-col justify-center">
+                    <div class="w-full bg-ice/90 rounded-full h-2.5 overflow-hidden cursor-pointer" onclick="seekAudio(event)">
+                        <div id="progressBar" class="bg-orange h-full w-0 transition-all duration-75"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] sm:text-[11px] font-mono text-slate/70 mt-1.5">
+                        <span id="currentTimeLabel">00:00</span>
+                        <span id="autoPlayStatus" class="font-sans text-[10px] text-slate/50 hidden sm:inline">2s Auto-start Active</span>
+                        <span id="totalDurationLabel">00:35</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Side: Dr. Lindsay Portrait & Identity Badge -->
+        <div class="w-full md:w-64 lg:w-72 bg-navy relative shrink-0 min-h-[240px] md:min-h-full flex items-center justify-center overflow-hidden order-1 md:order-2 border-b md:border-b-0 md:border-l border-ice">
+            <img src="./Unfolded_arms_on_background_202609081318.jpeg" 
+                 onerror="this.onerror=null; this.src='./facing_camera.jpeg';"
+                 alt="Dr. Lindsay Dubock" 
+                 class="w-full h-full object-cover object-[24%_12%]">
+            
+            <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/25 to-transparent pointer-events-none"></div>
+
+            <!-- Portrait Bottom Identity Badge -->
+            <div class="absolute bottom-3 left-3.5 right-3.5 text-white pointer-events-none">
+                <div class="text-xs sm:text-sm font-bold tracking-tight">Dr. Lindsay Dubock</div>
+                <div class="text-[10px] sm:text-[11px] text-ice/85">Director, The Training Network</div>
+            </div>
+
+            <!-- Live Broadcast Audio Indicator Pill -->
+            <div class="absolute top-3.5 right-3.5 bg-navy/85 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/20 flex items-center space-x-1.5 shadow-sm">
+                <span id="speakerPulse" class="w-2 h-2 rounded-full bg-orange animate-pulse"></span>
+                <span id="speakerStatus">Ready</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Verbatim spoken text and timings for Block 2: Audio Briefing (Slide 9)
+        const timedPhrases = [
+            { 
+                id: 0, 
+                start: 0.0, 
+                end: 7.8, 
+                text: "When we teach you to look beneath the waterline, staff often worry: 'Are you asking me to just sit here and take verbal abuse because the patient is distressed?'" 
+            },
+            { 
+                id: 1, 
+                start: 7.9, 
+                end: 11.2, 
+                text: "Let me be completely clear: no." 
+            },
+            { 
+                id: 2, 
+                start: 11.3, 
+                end: 16.5, 
+                text: "Understanding the driver does not excuse the behaviour. Empathy is a diagnostic tool, not a surrender." 
+            },
+            { 
+                id: 3, 
+                start: 16.6, 
+                end: 25.5, 
+                text: "The Boundaries Ladder is your safety framework. It gives you four clear, proportional rungs to hold your professional limits calmly, firmly, and consistently without provoking an argument." 
+            },
+            { 
+                id: 4, 
+                start: 25.6, 
+                end: 35.0, 
+                text: "Step onto each rung as escalation demands — from re-anchoring the tone, to naming the operational barrier, to offering clear choice, and exiting safely." 
+            }
+        ];
+
+        // Populate sentence blocks into the container
+        const speechBox = document.getElementById('speechBox');
+        timedPhrases.forEach((phrase) => {
+            const p = document.createElement('div');
+            p.id = `s-${phrase.id}`;
+            p.className = "sentence-token sentence-upcoming";
+            p.innerText = phrase.text;
+            speechBox.appendChild(p);
+        });
+
+        const audio = new Audio('./HD_S09_Lindsay_BoundariesLadderIntro.wav');
+        let isPlaying = false;
+        let ticker = null;
+        let totalDuration = 35.0;
+
+        audio.addEventListener('loadedmetadata', () => {
+            if (audio.duration && !isNaN(audio.duration)) {
+                totalDuration = audio.duration;
+                updateTotalDurationDisplay();
+            }
+        });
+
+        function updateTotalDurationDisplay() {
+            const m = String(Math.floor(totalDuration / 60)).padStart(2, '0');
+            const s = String(Math.floor(totalDuration % 60)).padStart(2, '0');
+            document.getElementById('totalDurationLabel').innerText = `${m}:${s}`;
+        }
+
+        audio.addEventListener('ended', () => {
+            pauseAudio();
+            resetTranscript();
+            document.getElementById('speakerStatus').innerText = "Completed";
+            document.getElementById('speakerPulse').classList.remove('animate-ping');
+        });
+
+        function playAudio() {
+            isPlaying = true;
+            document.getElementById('delayNotice').classList.add('hidden');
+            document.getElementById('playPauseIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            document.getElementById('speakerStatus').innerText = "Speaking";
+            document.getElementById('speakerPulse').classList.add('animate-ping');
+
+            audio.play().catch(err => {
+                console.warn("Direct audio blocked or missing, falling back to speech synthesis:", err);
+                fallbackSpeechSynthesis();
+            });
+
+            clearInterval(ticker);
+            ticker = setInterval(updateLiveProgress, 40);
+        }
+
+        function pauseAudio() {
+            isPlaying = false;
+            document.getElementById('playPauseIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
+            document.getElementById('speakerStatus').innerText = "Paused";
+            document.getElementById('speakerPulse').classList.remove('animate-ping');
+            audio.pause();
+            if ('speechSynthesis' in window) window.speechSynthesis.pause();
+            clearInterval(ticker);
+        }
+
+        function toggleAudio() {
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        function updateLiveProgress() {
+            const current = audio.currentTime;
+            const pct = Math.min(100, (current / totalDuration) * 100);
+            document.getElementById('progressBar').style.width = `${pct}%`;
+
+            const m = String(Math.floor(current / 60)).padStart(2, '0');
+            const s = String(Math.floor(current % 60)).padStart(2, '0');
+            document.getElementById('currentTimeLabel').innerText = `${m}:${s}`;
+
+            let activeSentenceEl = null;
+
+            timedPhrases.forEach((phrase) => {
+                const el = document.getElementById(`s-${phrase.id}`);
+                if (current >= phrase.start && current < phrase.end) {
+                    el.className = "sentence-token sentence-active";
+                    activeSentenceEl = el;
+                } else if (current >= phrase.end) {
+                    el.className = "sentence-token sentence-spoken";
+                } else {
+                    el.className = "sentence-token sentence-upcoming";
+                }
+            });
+
+            // Smooth auto-scroll following the active sentence
+            if (activeSentenceEl) {
+                const container = document.getElementById('transcriptViewport');
+                const offsetTop = activeSentenceEl.offsetTop - container.offsetTop;
+                if (Math.abs(container.scrollTop - (offsetTop - 20)) > 25) {
+                    container.scrollTo({ top: offsetTop - 20, behavior: 'smooth' });
+                }
+            }
+        }
+
+        function seekAudio(event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const targetPct = clickX / rect.width;
+            audio.currentTime = targetPct * totalDuration;
+            updateLiveProgress();
+            if (!isPlaying) {
+                playAudio();
+            }
+        }
+
+        function resetTranscript() {
+            timedPhrases.forEach((phrase) => {
+                const el = document.getElementById(`s-${phrase.id}`);
+                if (el) el.className = "sentence-token sentence-upcoming";
+            });
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('currentTimeLabel').innerText = '00:00';
+            document.getElementById('transcriptViewport').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function fallbackSpeechSynthesis() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const fullText = timedPhrases.map(p => p.text).join(' ');
+                const utterance = new SpeechSynthesisUtterance(fullText);
+                utterance.rate = 0.92;
+                utterance.pitch = 0.95;
+                const voices = window.speechSynthesis.getVoices();
+                const ukVoice = voices.find(v => v.lang.includes('en-GB') || v.name.includes('British') || v.name.includes('UK'));
+                if (ukVoice) utterance.voice = ukVoice;
+
+                utterance.onboundary = function(e) {
+                    const charRatio = e.charIndex / Math.max(1, fullText.length);
+                    const approxTime = charRatio * totalDuration;
+                    timedPhrases.forEach((phrase) => {
+                        const el = document.getElementById(`s-${phrase.id}`);
+                        if (approxTime >= phrase.start && approxTime < phrase.end) {
+                            el.className = "sentence-token sentence-active";
+                        } else if (approxTime >= phrase.end) {
+                            el.className = "sentence-token sentence-spoken";
+                        } else {
+                            el.className = "sentence-token sentence-upcoming";
+                        }
+                    });
+                };
+
+                utterance.onend = () => {
+                    pauseAudio();
+                    resetTranscript();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Automatic 2-Second Delay Countdown
+        window.addEventListener('DOMContentLoaded', () => {
+            let countdown = 2;
+            const delayNotice = document.getElementById('delayNotice');
+
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    delayNotice.innerText = `Starting in ${countdown}s...`;
+                } else {
+                    clearInterval(countdownInterval);
+                    delayNotice.innerText = "Playing...";
+                    playAudio();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
