@@ -43,28 +43,34 @@
         /* Sentence highlighting tokens */
         .sentence-token {
             display: block;
-            margin-bottom: 8px;
-            padding: 9px 12px;
-            border-radius: 10px;
-            border-left: 3px solid transparent;
+            margin-bottom: 10px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border-left: 4px solid transparent;
             transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-            line-height: 1.55;
-            font-size: 13px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        @media (min-width: 640px) {
+            .sentence-token {
+                font-size: 16px;
+                padding: 14px 18px;
+            }
         }
         .sentence-active {
             background-color: #FE5000;
             color: #ffffff !important;
             font-weight: 600;
             border-left-color: #0C2340;
-            box-shadow: 0 4px 14px rgba(254, 80, 0, 0.28);
-            transform: translateX(2px);
+            box-shadow: 0 6px 18px rgba(254, 80, 0, 0.32);
+            transform: translateX(3px);
         }
         .sentence-spoken {
             color: #0C2340;
             opacity: 0.95;
             font-weight: 500;
             border-left-color: #DBE2E9;
-            background-color: rgba(219, 226, 233, 0.28);
+            background-color: rgba(219, 226, 233, 0.35);
         }
         .sentence-upcoming {
             color: #94A3B8;
@@ -75,65 +81,63 @@
         }
     </style>
 </head>
-<body class="bg-transparent text-slate font-sans p-2 sm:p-3 flex flex-col items-center justify-start w-full">
+<body class="bg-transparent text-slate font-sans p-1 sm:p-3 md:p-5 flex flex-col items-center justify-center w-full min-h-screen">
 
-    <div class="w-full max-w-4xl mx-auto bg-white border border-ice rounded-2xl shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch">
+    <div class="w-full max-w-6xl mx-auto bg-white border border-ice rounded-2xl md:rounded-3xl shadow-md overflow-hidden flex flex-col md:flex-row items-stretch min-h-[460px] md:min-h-[520px]">
         
         <!-- Left Side: Interactive Telemetry & Sentence-by-Sentence Viewport -->
-        <div class="flex-1 p-4 sm:p-6 flex flex-col justify-between space-y-3.5 order-2 md:order-1">
+        <div class="flex-1 p-5 sm:p-7 md:p-9 flex flex-col justify-between space-y-4 md:space-y-6 order-2 md:order-1">
             
             <!-- Header Metadata -->
             <div>
-                <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-ice/70">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-orange animate-pulse"></span>
-                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-trust">
+                <div class="flex items-center justify-between gap-2 pb-3 border-b border-ice/80">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="w-3 h-3 rounded-full bg-orange animate-pulse"></span>
+                        <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-trust">
                             Phase 3 · Abstract Conceptualisation & Safety
                         </span>
                     </div>
-                    <div id="delayNotice" class="text-[11px] font-mono text-orange font-semibold bg-orange/10 px-2.5 py-0.5 rounded-md">
+                    <div id="delayNotice" class="text-xs sm:text-sm font-mono text-orange font-semibold bg-orange/10 px-3 py-1 rounded-lg">
                         Starting in 2s...
                     </div>
                 </div>
 
-                <div class="mt-2.5 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-base sm:text-lg font-bold text-navy tracking-tight leading-tight">
-                            The Boundaries Ladder: Clinical Briefing
-                        </h2>
-                        <p class="text-[11px] sm:text-xs text-slate/70 mt-0.5">
-                            Where empathy ends and professional safety limits begin
-                        </p>
-                    </div>
+                <div class="mt-3.5">
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-navy tracking-tight leading-tight">
+                        The Boundaries Ladder: Clinical Briefing
+                    </h2>
+                    <p class="text-xs sm:text-sm md:text-base text-slate/75 mt-1.5 leading-normal">
+                        Where empathy ends and professional safety limits begin
+                    </p>
                 </div>
             </div>
 
             <!-- Sentence Highlighting Viewport -->
-            <div id="transcriptViewport" class="p-3.5 sm:p-4 bg-slate-50 border border-ice/80 rounded-xl overflow-y-auto max-h-[175px] sm:max-h-[195px] leading-relaxed scroll-smooth">
+            <div id="transcriptViewport" class="p-4 sm:p-5 md:p-6 bg-slate-50 border border-ice/90 rounded-2xl overflow-y-auto min-h-[220px] md:min-h-[260px] max-h-[260px] md:max-h-[320px] leading-relaxed scroll-smooth shadow-inner">
                 <div id="speechBox">
                     <!-- Sentences populated via JavaScript -->
                 </div>
             </div>
 
             <!-- Playback Control Bar -->
-            <div class="pt-2 border-t border-ice flex items-center space-x-3.5">
+            <div class="pt-3 border-t border-ice flex items-center space-x-4 sm:space-x-5">
                 <!-- Play/Pause Button -->
                 <button id="btnPlayPause" onclick="toggleAudio()" 
-                        class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-navy hover:bg-trust text-white flex items-center justify-center transition-all active:scale-95 shadow-md cursor-pointer shrink-0"
+                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-navy hover:bg-trust text-white flex items-center justify-center transition-all active:scale-95 shadow-md hover:shadow-lg cursor-pointer shrink-0"
                         title="Play / Pause Briefing">
-                    <svg id="playPauseIcon" class="w-5 h-5 ml-0.5 fill-current" viewBox="0 0 24 24">
+                    <svg id="playPauseIcon" class="w-6 h-6 ml-0.5 fill-current" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z"/>
                     </svg>
                 </button>
 
                 <!-- Scrubber Progress Bar & Timers -->
-                <div class="flex-1 flex flex-col justify-center">
-                    <div class="w-full bg-ice/90 rounded-full h-2.5 overflow-hidden cursor-pointer" onclick="seekAudio(event)">
-                        <div id="progressBar" class="bg-orange h-full w-0 transition-all duration-75"></div>
+                <div class="flex-1 flex flex-col justify-center space-y-2">
+                    <div class="w-full bg-ice/90 hover:bg-ice rounded-full h-3 overflow-hidden cursor-pointer transition-colors" onclick="seekAudio(event)">
+                        <div id="progressBar" class="bg-orange h-full w-0 transition-all duration-75 rounded-full"></div>
                     </div>
-                    <div class="flex justify-between items-center text-[10px] sm:text-[11px] font-mono text-slate/70 mt-1.5">
+                    <div class="flex justify-between items-center text-xs sm:text-sm font-mono text-slate/75 font-medium">
                         <span id="currentTimeLabel">00:00</span>
-                        <span id="autoPlayStatus" class="font-sans text-[10px] text-slate/50 hidden sm:inline">2s Auto-start Active</span>
+                        <span id="autoPlayStatus" class="font-sans text-xs text-slate/50 hidden sm:inline">2s Auto-start Active</span>
                         <span id="totalDurationLabel">00:35</span>
                     </div>
                 </div>
@@ -142,23 +146,23 @@
         </div>
 
         <!-- Right Side: Dr. Lindsay Portrait & Identity Badge -->
-        <div class="w-full md:w-64 lg:w-72 bg-navy relative shrink-0 min-h-[240px] md:min-h-full flex items-center justify-center overflow-hidden order-1 md:order-2 border-b md:border-b-0 md:border-l border-ice">
+        <div class="w-full md:w-80 lg:w-96 xl:w-[420px] bg-navy relative shrink-0 min-h-[300px] md:min-h-full flex items-center justify-center overflow-hidden order-1 md:order-2 border-b md:border-b-0 md:border-l border-ice">
             <img src="./Unfolded_arms_on_background_202609081318.jpeg" 
                  onerror="this.onerror=null; this.src='./facing_camera.jpeg';"
                  alt="Dr. Lindsay Dubock" 
                  class="w-full h-full object-cover object-[24%_12%]">
             
-            <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/25 to-transparent pointer-events-none"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-navy/95 via-navy/20 to-transparent pointer-events-none"></div>
 
             <!-- Portrait Bottom Identity Badge -->
-            <div class="absolute bottom-3 left-3.5 right-3.5 text-white pointer-events-none">
-                <div class="text-xs sm:text-sm font-bold tracking-tight">Dr. Lindsay Dubock</div>
-                <div class="text-[10px] sm:text-[11px] text-ice/85">Director, The Training Network</div>
+            <div class="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 text-white pointer-events-none">
+                <div class="text-sm sm:text-base md:text-lg font-bold tracking-tight">Dr. Lindsay Dubock</div>
+                <div class="text-xs sm:text-sm text-ice/85 mt-0.5">Director, The Training Network</div>
             </div>
 
             <!-- Live Broadcast Audio Indicator Pill -->
-            <div class="absolute top-3.5 right-3.5 bg-navy/85 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/20 flex items-center space-x-1.5 shadow-sm">
-                <span id="speakerPulse" class="w-2 h-2 rounded-full bg-orange animate-pulse"></span>
+            <div class="absolute top-4 right-4 sm:top-5 sm:right-5 bg-navy/85 backdrop-blur-xs text-white text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full border border-white/20 flex items-center space-x-2 shadow-sm">
+                <span id="speakerPulse" class="w-2.5 h-2.5 rounded-full bg-orange animate-pulse"></span>
                 <span id="speakerStatus">Ready</span>
             </div>
         </div>
