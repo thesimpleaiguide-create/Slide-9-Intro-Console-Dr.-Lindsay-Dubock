@@ -113,33 +113,9 @@
             </div>
 
             <!-- Sentence Highlighting Viewport -->
-            <div id="transcriptViewport" class="p-4 sm:p-5 md:p-6 bg-slate-50 border border-ice/90 rounded-2xl overflow-y-auto min-h-[220px] md:min-h-[260px] max-h-[260px] md:max-h-[320px] leading-relaxed scroll-smooth shadow-inner">
+            <div id="transcriptViewport" class="p-4 sm:p-5 md:p-6 bg-slate-50 border border-ice/90 rounded-2xl overflow-y-auto flex-1 min-h-[260px] md:min-h-[340px] leading-relaxed scroll-smooth shadow-inner">
                 <div id="speechBox">
                     <!-- Sentences populated via JavaScript -->
-                </div>
-            </div>
-
-            <!-- Playback Control Bar -->
-            <div class="pt-3 border-t border-ice flex items-center space-x-4 sm:space-x-5">
-                <!-- Play/Pause Button -->
-                <button id="btnPlayPause" onclick="toggleAudio()" 
-                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-navy hover:bg-trust text-white flex items-center justify-center transition-all active:scale-95 shadow-md hover:shadow-lg cursor-pointer shrink-0"
-                        title="Play / Pause Briefing">
-                    <svg id="playPauseIcon" class="w-6 h-6 ml-0.5 fill-current" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                </button>
-
-                <!-- Scrubber Progress Bar & Timers -->
-                <div class="flex-1 flex flex-col justify-center space-y-2">
-                    <div class="w-full bg-ice/90 hover:bg-ice rounded-full h-3 overflow-hidden cursor-pointer transition-colors" onclick="seekAudio(event)">
-                        <div id="progressBar" class="bg-orange h-full w-0 transition-all duration-75 rounded-full"></div>
-                    </div>
-                    <div class="flex justify-between items-center text-xs sm:text-sm font-mono text-slate/75 font-medium">
-                        <span id="currentTimeLabel">00:00</span>
-                        <span id="autoPlayStatus" class="font-sans text-xs text-slate/50 hidden sm:inline">2s Auto-start Active</span>
-                        <span id="totalDurationLabel">00:35</span>
-                    </div>
                 </div>
             </div>
 
@@ -155,10 +131,19 @@
             <div class="absolute inset-0 bg-gradient-to-t from-navy/95 via-navy/20 to-transparent pointer-events-none"></div>
 
             <!-- Portrait Bottom Identity Badge -->
-            <div class="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 text-white pointer-events-none">
+            <div class="absolute bottom-4 left-4 right-16 sm:bottom-5 sm:left-5 sm:right-20 text-white pointer-events-none">
                 <div class="text-sm sm:text-base md:text-lg font-bold tracking-tight">Dr. Lindsay Dubock</div>
                 <div class="text-xs sm:text-sm text-ice/85 mt-0.5">Director, The Training Network</div>
             </div>
+
+            <!-- Small Play/Pause Button on Picture (Bottom Right) -->
+            <button id="btnPlayPause" onclick="toggleAudio()" 
+                    class="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-orange hover:bg-white text-white hover:text-navy flex items-center justify-center transition-all active:scale-95 shadow-lg border border-white/20 cursor-pointer z-10"
+                    title="Play / Pause Briefing">
+                <svg id="playPauseIcon" class="w-5 h-5 ml-0.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </button>
 
             <!-- Live Broadcast Audio Indicator Pill -->
             <div class="absolute top-4 right-4 sm:top-5 sm:right-5 bg-navy/85 backdrop-blur-xs text-white text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full border border-white/20 flex items-center space-x-2 shadow-sm">
@@ -222,15 +207,8 @@
         audio.addEventListener('loadedmetadata', () => {
             if (audio.duration && !isNaN(audio.duration)) {
                 totalDuration = audio.duration;
-                updateTotalDurationDisplay();
             }
         });
-
-        function updateTotalDurationDisplay() {
-            const m = String(Math.floor(totalDuration / 60)).padStart(2, '0');
-            const s = String(Math.floor(totalDuration % 60)).padStart(2, '0');
-            document.getElementById('totalDurationLabel').innerText = `${m}:${s}`;
-        }
 
         audio.addEventListener('ended', () => {
             pauseAudio();
@@ -243,6 +221,7 @@
             isPlaying = true;
             document.getElementById('delayNotice').classList.add('hidden');
             document.getElementById('playPauseIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            document.getElementById('playPauseIcon').classList.remove('ml-0.5');
             document.getElementById('speakerStatus').innerText = "Speaking";
             document.getElementById('speakerPulse').classList.add('animate-ping');
 
@@ -258,6 +237,7 @@
         function pauseAudio() {
             isPlaying = false;
             document.getElementById('playPauseIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
+            document.getElementById('playPauseIcon').classList.add('ml-0.5');
             document.getElementById('speakerStatus').innerText = "Paused";
             document.getElementById('speakerPulse').classList.remove('animate-ping');
             audio.pause();
@@ -275,12 +255,6 @@
 
         function updateLiveProgress() {
             const current = audio.currentTime;
-            const pct = Math.min(100, (current / totalDuration) * 100);
-            document.getElementById('progressBar').style.width = `${pct}%`;
-
-            const m = String(Math.floor(current / 60)).padStart(2, '0');
-            const s = String(Math.floor(current % 60)).padStart(2, '0');
-            document.getElementById('currentTimeLabel').innerText = `${m}:${s}`;
 
             let activeSentenceEl = null;
 
@@ -306,24 +280,11 @@
             }
         }
 
-        function seekAudio(event) {
-            const rect = event.currentTarget.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const targetPct = clickX / rect.width;
-            audio.currentTime = targetPct * totalDuration;
-            updateLiveProgress();
-            if (!isPlaying) {
-                playAudio();
-            }
-        }
-
         function resetTranscript() {
             timedPhrases.forEach((phrase) => {
                 const el = document.getElementById(`s-${phrase.id}`);
                 if (el) el.className = "sentence-token sentence-upcoming";
             });
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('currentTimeLabel').innerText = '00:00';
             document.getElementById('transcriptViewport').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
